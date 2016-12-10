@@ -8,7 +8,7 @@ var app     = express();
 
 	
 
-var url = 'https://www.google.com';
+var url = 'https://www.lovepopcards.com/products';
 
     // The structure of our request call
     // The first parameter is our URL
@@ -17,19 +17,24 @@ var product = new Array();
    	
 request(url, function(error, response, html)
 {
-	console.log(error || response || html);
+	//console.log(error || response || html);
    	if(!error)
    	{
-       	var $ = cheerio.load(html),
-       		x = $('a.grid__image').html();
-       	console.log(x);
+       	var $ = cheerio.load(html);
+       	var	x = $('a.grid__image');
 		for(var i=0; i<x.length;i++)
 		{
-			console.log(x[i]);	
-			product.push(x[i].href);
+			//console.log(x[i].attribs.href);
+			product.push(url +  x[i].attribs.href);
 		} 
    	}
+   	for(var i=0; i< product.length;i++)
+	{
+		console.log(product[i]);
+	}
 })
+
+
 
 
 
