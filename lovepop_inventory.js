@@ -23,8 +23,6 @@ request(url, function(error, response, html)
        	var $ = cheerio.load(html);
        	var	urls = $('a.grid__image');
        	var ids = $('select');
-       	console.log();
-
 		for(var i=0; i<urls.length;i++)
 		{
 			//console.log(x[i].attribs.href);
@@ -37,15 +35,15 @@ request(url, function(error, response, html)
    	for(var i=0; i< products.length;i++)
 	{
 		console.log(products[i]);
-		/*$.ajax({
-			url : product[i],
-			type: "POST",
-			dataType: "json",
-			data: {
 
-			}
-		})*/
 	}
+   	request.post({url:products[0].url,form:{id:products[0].id,quantity:99999999}},function(sub_err,sub_response,sub_body) {
+   		console.log(sub_err);
+   		console.log(sub_response);
+   		console.log(sub_body);
+
+   	})
+   	
 })
 
 
