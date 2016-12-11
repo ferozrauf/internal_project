@@ -13,7 +13,7 @@ var url = 'https://www.lovepopcards.com/products';
     // The structure of our request call
     // The first parameter is our URL
     // The callback function takes 3 parameters, an error, response status code and the html
-var product = new Array();
+var products = new Array();
    	
 request(url, function(error, response, html)
 {
@@ -21,16 +21,30 @@ request(url, function(error, response, html)
    	if(!error)
    	{
        	var $ = cheerio.load(html);
-       	var	x = $('a.grid__image');
-		for(var i=0; i<x.length;i++)
+       	var	urls = $('a.grid__image');
+       	var ids = $('select');
+       	console.log();
+
+		for(var i=0; i<urls.length;i++)
 		{
 			//console.log(x[i].attribs.href);
-			product.push(url +  x[i].attribs.href);
+			var un_prod = new Object();
+			un_prod.url = url + urls[i].attribs.href;
+			un_prod.id = parseInt(ids[i].children[0].next.attribs.value);
+			products.push(un_prod);
 		} 
    	}
-   	for(var i=0; i< product.length;i++)
+   	for(var i=0; i< products.length;i++)
 	{
-		console.log(product[i]);
+		console.log(products[i]);
+		/*$.ajax({
+			url : product[i],
+			type: "POST",
+			dataType: "json",
+			data: {
+
+			}
+		})*/
 	}
 })
 
