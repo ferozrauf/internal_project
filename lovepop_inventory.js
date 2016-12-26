@@ -183,7 +183,14 @@ function startProcess()
 }
 
 
-startProcess();
+if(process.argv.length>2)
+{
+	var interval_num_hours = parseInt(process.argv[2]);
+	setInterval(startProcess,3600000*interval_num_hours);
+} else {
+	startProcess();
+}
+
 
 
 
