@@ -13,10 +13,19 @@ var cart_url = 'https://www.lovepopcards.com/cart/add.js';
 var stream = fs.createWriteStream('data.csv');
 
 var products = new Array();
-
 var i = 0;
 var size = 0;
+var exclusion_list = new Object();
+exclusion_list['https://www.lovepopcards.com/products/gift-card'] = true;
+exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-new-year-card'] = true;
 
+
+
+function writeToFile()
+{
+	for(var j=0; j<products.length;j++)
+		stream.write(products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items + '\n'); 
+}
 
 function popUpCardsPostRequest(product)
 {
@@ -29,12 +38,10 @@ function popUpCardsPostRequest(product)
 			var item_name = overfill_response.description.indexOf('sold out') !== -1 ? overfill_response.description.replace('The product \'','').replace('\' is already sold out.','') :  overfill_response.description.replace('You can only add ' + num_items + ' ','').replace(' to the cart.','');
 			product.num_items = num_items;
 			product.item_name = item_name;
-			stream.write(product.url.replace('https://www.lovepopcards.com/products/','') + ',' + product.id + ',' + product.num_items + '\n'); 
 			i++;
-			if(i===size-1)
+			if(i===size)
 			{
-				stream.close();
-				process.exit();
+				writeToFile();
 			}
 		} catch(e) {
 			setTimeout(function() {
@@ -64,28 +71,33 @@ function popUpCardsPostRequest(product)
     // The first parameter is our URL
     // The callback function takes 3 parameters, an error, response status code and the html
    	
-function loadDataFromLovePop(error,reponse,html)
-{
-	if(!error)
-   	{
-       	var $ = cheerio.load(html);
-       	url = url.replace('/products','');
-       	var	urls = $('a.grid__image');
-       	var ids = $('select');
-       	size = urls.length;
-		for(var j=0; j<urls.length;j++)
-		{
-			//console.log(x[i].attribs.href);
-			var un_prod = new Object();
-			un_prod.url = url + urls[j].attribs.href;
-			un_prod.id = parseInt(ids[j].children[0].next.attribs.value);
-			products.push(un_prod);
-		} 
-   	}
 
-   	for(j=0; j < products.length;j++)
+var items = new Object();
+var nums = 9;
+var itr = 0;
+
+function getInventoryDataOnProducts()
+{
+	
+	for(var item in items)
+	{
+		//console.log(items[item]);
+		if(!(items[item].url in exclusion_list))
+			products.push(items[item]);
+	}
+	products.sort((e1,e2) => {
+		if(e1.url < e2.url)
+			return -1;
+		else if(e1.url === e2.url)
+			return 0;
+		else
+			return 1;
+	});
+	size = products.length;
+	itr = 0;
+
+	for(var j=0; j < products.length;j++)
    	{
-   		//console.log(products[j]);
    		request(
 		{
 			url:cart_url,
@@ -104,14 +116,59 @@ function loadDataFromLovePop(error,reponse,html)
 			body: 'id=' + products[j].id + '&quantity=9999999999' 
 		},popUpCardsPostRequest(products[j]));
    	}
-	
+   	
 }
 
+function loadDataFromLovePop(error,response,html)
+{
+	if(!error)
+	{
+		var $ = cheerio.load(html);
+    	url = url.replace('/products','');
+    	var	urls = $('a.grid__image');
+       	var ids = $('div.grid__item.product-item').find('select');
+       	var price = $('p.price span');
+       	size = urls.length;
+       	var price_offset = 0;
+       	//console.log(ids[0]);
+       
+		for(var j=0; j<urls.length;j++)
+		{			
+			var un_prod = new Object();
+			un_prod.url = url + urls[j].attribs.href;
+			un_prod.id = parseInt(ids[j].children[1].attribs['value']);
+			if(price[j + price_offset].children.length === 0)
+				price_offset++;
+			un_prod.price = parseInt(price[j + price_offset].children[0].data.substring(1));
+			items[urls[j].attribs.href.replace('/products/','')] = un_prod;
+		}
+		itr++;
+		if(itr===nums)
+			getInventoryDataOnProducts();
+	}
+	
+}   		
 
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=1', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=2', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=3', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=4', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=5', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=6', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=7', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=8', loadDataFromLovePop);
+//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=9', loadDataFromLovePop);
+
+
+//request(url, loadProductsFromLovePop);
 stream.once('open', function(fd) {
-	stream.write('Product Name, ID, Quantity\n');
-	request(url, loadDataFromLovePop);
+	stream.write('Product Name, ID, Price, Quantity\n');
+	for(var j=1; j<10;j++)
+		request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j, loadDataFromLovePop);
+	//while(itr!=nums) { console.log(itr);}
+	
 });
+
 
 
 
