@@ -163,18 +163,6 @@ function loadDataFromLovePop(error,response,html)
 	
 }   		
 
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=1', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=2', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=3', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=4', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=5', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=6', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=7', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=8', loadDataFromLovePop);
-//request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=9', loadDataFromLovePop);
-
-
-//request(url, loadProductsFromLovePop);
 
 function startProcess()
 {
