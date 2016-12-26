@@ -26,7 +26,6 @@ function writeToFile()
 	var current_hour = date.getHours();
 	if(fs.existsSync('data.csv'))
 	{
-		console.log('re-writing');
 		var lines = fs.readFileSync('data.csv').toString().split('\n');
 
 		var stream = fs.createWriteStream('data.csv');
@@ -49,8 +48,6 @@ function writeToFile()
 function popUpCardsPostRequest(product)
 {
 	return function(error,response,body) {
-		//console.log(body);
-		//console.log(product);
 		try {
 			var overfill_response = JSON.parse(body);
 			var num_items = overfill_response.description.indexOf('sold out') !== -1 ? 0 : parseInt(overfill_response.description.match(/\d+/)[0]);
@@ -100,7 +97,6 @@ function getInventoryDataOnProducts()
 	
 	for(var item in items)
 	{
-		//console.log(items[item]);
 		if(!(items[item].url in exclusion_list))
 			products.push(items[item]);
 	}
@@ -149,7 +145,6 @@ function loadDataFromLovePop(error,response,html)
        	var price = $('p.price span');
        	size = urls.length;
        	var price_offset = 0;
-       	//console.log(ids[0]);
        
 		for(var j=0; j<urls.length;j++)
 		{			
