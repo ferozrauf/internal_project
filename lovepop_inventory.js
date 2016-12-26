@@ -10,7 +10,6 @@ var app     = express();
 
 var url = 'https://www.lovepopcards.com/products';
 var cart_url = 'https://www.lovepopcards.com/cart/add.js';
-var stream = fs.createWriteStream('data.csv');
 
 var products = new Array();
 var i = 0;
@@ -23,8 +22,28 @@ exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-n
 
 function writeToFile()
 {
-	for(var j=0; j<products.length;j++)
-		stream.write(products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items + '\n'); 
+	var date = new Date();
+	var current_hour = date.getHours();
+	if(fs.existsSync('data.csv'))
+	{
+		console.log('re-writing');
+		var lines = fs.readFileSync('data.csv').toString().split('\n');
+
+		var stream = fs.createWriteStream('data.csv');
+		stream.once('open', function(fd) {
+			stream.write(lines[0] + date.toString() + '\n');
+			for(var j=0; j<products.length;j++)
+				stream.write(lines[j+1] + ',' + products[j].num_items +  '\n'); 
+		});		
+	} else {
+		var stream = fs.createWriteStream('data.csv');
+		stream.once('open', function(fd) {
+			stream.write('Product Name, ID, Price,' + date.toString() + '\n');
+			for(var j=0; j<products.length;j++)
+				stream.write(products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items + '\n'); 
+		});
+	}
+	
 }
 
 function popUpCardsPostRequest(product)
@@ -161,13 +180,16 @@ function loadDataFromLovePop(error,response,html)
 
 
 //request(url, loadProductsFromLovePop);
-stream.once('open', function(fd) {
-	stream.write('Product Name, ID, Price, Quantity\n');
+
+function startProcess()
+{
 	for(var j=1; j<10;j++)
 		request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j, loadDataFromLovePop);
-	//while(itr!=nums) { console.log(itr);}
-	
-});
+}
+
+
+startProcess();
+
 
 
 
