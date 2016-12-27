@@ -30,7 +30,7 @@ function writeToFile()
 
 		var stream = fs.createWriteStream('data.csv');
 		stream.once('open', function(fd) {
-			stream.write(lines[0] + date.toString() + '\n');
+			stream.write(lines[0] + ',' + date.toString() + '\n');
 			for(var j=0; j<products.length;j++)
 				stream.write(lines[j+1] + ',' + products[j].num_items +  '\n'); 
 		});		
