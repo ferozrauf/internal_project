@@ -166,7 +166,7 @@ function loadDataFromLovePop(error,response,html)
 
 function startProcess()
 {
-	for(var j=1; j<10;j++)
+	for(var j=1; j<11;j++)
 		request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j, loadDataFromLovePop);
 }
 
