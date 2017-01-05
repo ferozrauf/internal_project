@@ -50,6 +50,7 @@ function popUpCardsPostRequest(product)
 	return function(error,response,body) {
 		try {
 			var overfill_response = JSON.parse(body);
+			//console.log(overfill_response.description);
 			var num_items = overfill_response.description.indexOf('sold out') !== -1 ? 0 : parseInt(overfill_response.description.match(/\d+/)[0]);
 			var item_name = overfill_response.description.indexOf('sold out') !== -1 ? overfill_response.description.replace('The product \'','').replace('\' is already sold out.','') :  overfill_response.description.replace('You can only add ' + num_items + ' ','').replace(' to the cart.','');
 			product.num_items = num_items;
@@ -89,7 +90,7 @@ function popUpCardsPostRequest(product)
    	
 
 var items = new Object();
-var nums = 9;
+var nums = 10;
 var itr = 0;
 
 function getInventoryDataOnProducts()
