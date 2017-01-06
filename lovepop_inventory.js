@@ -23,7 +23,6 @@ exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-n
 function writeToFile()
 {
 	var date = new Date();
-	var current_hour = date.getHours();
 	if(fs.existsSync('data.csv'))
 	{
 		var lines = fs.readFileSync('data.csv').toString().split('\n');
@@ -31,15 +30,83 @@ function writeToFile()
 		var stream = fs.createWriteStream('data.csv');
 		stream.once('open', function(fd) {
 			stream.write(lines[0] + ',' + date.toString() + '\n');
+			var set_of_dates = lines[0].replace('Product Name, ID, Price,','').split(',');
+			var prev_products = new Object();
+			for(var k=1;k<lines.length;k++)
+			{
+				if(lines[k])
+				{
+					var current_line = lines[k].split(',');
+					var prev_product = new Object();
+					prev_product.url = 'https://www.lovepopcards.com/products/' + current_line[0];
+					prev_product.id = current_line[1];
+					prev_product.price = current_line[2];
+					for(var j=0;j<set_of_dates.length;j++)
+						prev_product[set_of_dates[j]] = parseInt(current_line[j+3]);
+					prev_products[prev_product.url] = prev_product;
+				}
+				
+			}
+			for(var k=0;k<products.length;k++)
+			{
+				if(products[k].url in prev_products)
+				{
+					for(var j=0;j<set_of_dates.length;j++)
+					{
+						products[k][set_of_dates[j]] = prev_products[products[k].url][set_of_dates[j]];
+						if(!(products[k][set_of_dates[j]]))
+							products[k][set_of_dates[j]] = 0;
+					}
+					delete prev_products[products[k].url]
+				} else {
+					for(var j=0;j<set_of_dates.length;j++)
+						products[k][set_of_dates[j]] = 0;
+				}
+			}
+			for(var url in prev_products)
+			{
+				prev_products[url].num_items = 0;
+				products.push(prev_products[url]);
+			}
+			products.sort((e1,e2) => {
+				if(e1.url < e2.url)
+					return -1;
+				else if(e1.url === e2.url)
+					return 0;
+				else
+					return 1;
+			});
+			
 			for(var j=0; j<products.length;j++)
-				stream.write(lines[j+1] + ',' + products[j].num_items +  '\n'); 
+			{	
+				var file_line = products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price;
+				for(var k=0;k<set_of_dates.length;k++)
+				{
+					file_line += ',' + products[j][set_of_dates[k]];
+				}
+				file_line += ',' + products[j].num_items;
+				stream.write(file_line +  '\n'); 
+			}
+			console.log('updated file!');
 		});		
 	} else {
 		var stream = fs.createWriteStream('data.csv');
 		stream.once('open', function(fd) {
+			products.sort((e1,e2) => {
+				if(e1.url < e2.url)
+					return -1;
+				else if(e1.url === e2.url)
+					return 0;
+				else
+					return 1;
+			});
 			stream.write('Product Name, ID, Price,' + date.toString() + '\n');
 			for(var j=0; j<products.length;j++)
-				stream.write(products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items + '\n'); 
+			{
+				var file_line = products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items ;
+				stream.write(file_line + '\n'); 
+			}
+			console.write('first write');
 		});
 	}
 	
@@ -55,6 +122,7 @@ function popUpCardsPostRequest(product)
 			var item_name = overfill_response.description.indexOf('sold out') !== -1 ? overfill_response.description.replace('The product \'','').replace('\' is already sold out.','') :  overfill_response.description.replace('You can only add ' + num_items + ' ','').replace(' to the cart.','');
 			product.num_items = num_items;
 			product.item_name = item_name;
+			//console.log(overfill_response.description);
 			i++;
 			if(i===size)
 			{
@@ -101,14 +169,7 @@ function getInventoryDataOnProducts()
 		if(!(items[item].url in exclusion_list))
 			products.push(items[item]);
 	}
-	products.sort((e1,e2) => {
-		if(e1.url < e2.url)
-			return -1;
-		else if(e1.url === e2.url)
-			return 0;
-		else
-			return 1;
-	});
+	
 	size = products.length;
 	itr = 0;
 
