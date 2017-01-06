@@ -107,7 +107,7 @@ function writeToFile()
 				var file_line = products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items ;
 				stream.write(file_line + '\n'); 
 			}
-			console.write('first write');
+			console.log('first write');
 		});
 	}
 	
