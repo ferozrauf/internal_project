@@ -22,6 +22,7 @@ exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-n
 
 function writeToFile()
 {
+	i=0;
 	var date = new Date();
 	if(fs.existsSync('data.csv'))
 	{
@@ -87,7 +88,7 @@ function writeToFile()
 				file_line += ',' + products[j].num_items;
 				stream.write(file_line +  '\n'); 
 			}
-			
+			products.splice(0,products.length);
 			console.log('updated file!');
 		});		
 	} else {
@@ -164,13 +165,11 @@ var itr = 0;
 
 function getInventoryDataOnProducts()
 {
-	
 	for(var item in items)
 	{
 		if(!(items[item].url in exclusion_list))
 			products.push(items[item]);
 	}
-	
 	size = products.length;
 	itr = 0;
 
