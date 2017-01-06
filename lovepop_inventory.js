@@ -87,6 +87,7 @@ function writeToFile()
 				file_line += ',' + products[j].num_items;
 				stream.write(file_line +  '\n'); 
 			}
+			
 			console.log('updated file!');
 		});		
 	} else {
