@@ -22,7 +22,7 @@ exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-n
 
 function writeToFile()
 {
-	i=0;
+	i = 0;
 	var date = new Date();
 	if(fs.existsSync('data.csv'))
 	{
@@ -88,7 +88,8 @@ function writeToFile()
 				file_line += ',' + products[j].num_items;
 				stream.write(file_line +  '\n'); 
 			}
-			products.splice(0,products.length);
+			products = new Array();
+			items = new Object();
 			console.log('updated file!');
 		});		
 	} else {
@@ -108,6 +109,8 @@ function writeToFile()
 				var file_line = products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price + ',' + products[j].num_items ;
 				stream.write(file_line + '\n'); 
 			}
+			products = new Array();
+			items = new Object();
 			console.log('first write');
 		});
 	}
