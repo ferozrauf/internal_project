@@ -17,7 +17,7 @@ var size = 0;
 var exclusion_list = new Object();
 exclusion_list['https://www.lovepopcards.com/products/gift-card'] = true;
 exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-new-year-card'] = true;
-
+exclusion_list['https://www.lovepopcards.com/products/dragon-pop-up-card'] = true;
 
 
 function writeToFile()
@@ -88,9 +88,9 @@ function writeToFile()
 				file_line += ',' + products[j].num_items;
 				stream.write(file_line +  '\n'); 
 			}
+			console.log('updated file!');
 			products = new Array();
 			items = new Object();
-			console.log('updated file!');
 		});		
 	} else {
 		var stream = fs.createWriteStream('data.csv');
