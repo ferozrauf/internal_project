@@ -163,7 +163,7 @@ function popUpCardsPostRequest(product)
    	
 
 var items = new Object();
-var nums = 10;
+var nums = 18;
 var itr = 0;
 
 function getInventoryDataOnProducts()
@@ -231,7 +231,7 @@ function loadDataFromLovePop(error,response,html)
 
 function startProcess()
 {
-	for(var j=1; j<11;j++)
+	for(var j=1; j<nums+1;j++)
 		request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j, loadDataFromLovePop);
 }
 
