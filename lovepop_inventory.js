@@ -12,9 +12,11 @@ var url = 'https://www.lovepopcards.com/products';
 var cart_url = 'https://www.lovepopcards.com/cart/add.js';
 
 var products = new Array();
+var prev_recorded = new Object();
 var i = 0;
 var size = 0;
 var exclusion_list = new Object();
+var total_size = 0;
 exclusion_list['https://www.lovepopcards.com/products/gift-card'] = true;
 exclusion_list['https://www.lovepopcards.com/products/monkey-3d-pop-up-chinese-new-year-card'] = true;
 exclusion_list['https://www.lovepopcards.com/products/dragon-pop-up-card'] = true;
@@ -66,7 +68,7 @@ function writeToFile()
 			}
 			for(var url in prev_products)
 			{
-				prev_products[url].num_items = 0;
+				//prev_products[url].num_items = 0;
 				products.push(prev_products[url]);
 			}
 			products.sort((e1,e2) => {
@@ -78,7 +80,7 @@ function writeToFile()
 					return 1;
 			});
 			
-			for(var j=0; j<products.length;j++)
+			for(var j=0; j<products.length ;j++)
 			{	
 				var file_line = products[j].url.replace('https://www.lovepopcards.com/products/','') + ',' + products[j].id + ',' + products[j].price;
 				for(var k=0;k<set_of_dates.length;k++)
@@ -121,10 +123,18 @@ function popUpCardsPostRequest(product)
 {
 	return function(error,response,body) {
 		try {
+			//console.log(i);
+			//console.log(body);
 			var overfill_response = JSON.parse(body);
+			/*var delay = 0;
+			if(overfill_response.status==='too_many_requests')
+				delay = 1800000;
+			sleep(delay);*/
 			//console.log(overfill_response.description);
 			var num_items = overfill_response.description.indexOf('sold out') !== -1 ? 0 : parseInt(overfill_response.description.match(/\d+/)[0]);
-			var item_name = overfill_response.description.indexOf('sold out') !== -1 ? overfill_response.description.replace('The product \'','').replace('\' is already sold out.','') :  overfill_response.description.replace('You can only add ' + num_items + ' ','').replace(' to the cart.','');
+			var item_name = overfill_response.description.indexOf('sold out') !== -1 ? 
+			overfill_response.description.replace('The product \'','').replace('\' is already sold out.','') : 
+			 overfill_response.description.replace('You can only add ' + num_items + ' ','').replace(' to the cart.','');
 			product.num_items = num_items;
 			product.item_name = item_name;
 			//console.log(overfill_response.description);
@@ -140,7 +150,6 @@ function popUpCardsPostRequest(product)
 					url:cart_url,
 					method:'POST',
 					headers: {
-						'Accept-Encoding' : 'gzip, deflate, br',
 						'Accept-Language' : 'en-US,en;q=0.8',
 						'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36', 
 						'Content-Type' : 'application/x-www-form-urlencoded',
@@ -154,9 +163,10 @@ function popUpCardsPostRequest(product)
 				},popUpCardsPostRequest(product));
 			},1000);
 		}
-	}
-	
+	}	
 }
+
+
     // The structure of our request call
     // The first parameter is our URL
     // The callback function takes 3 parameters, an error, response status code and the html
@@ -165,25 +175,41 @@ function popUpCardsPostRequest(product)
 var items = new Object();
 var nums = 18;
 var itr = 0;
-
+var limit = 90;
 function getInventoryDataOnProducts()
 {
+	total_size = 0;
+	for(var item in items) 
+	{
+		if(!(items[item].url in exclusion_list)) 
+			total_size++;
+	}
+	var prev_recorded_size = 0;
+	for(var prev_recorded_item in prev_recorded)
+		prev_recorded_size++;
+	if(total_size<=prev_recorded_size) 
+	{
+		prev_recorded = new Object();
+	}
 	for(var item in items)
 	{
-		if(!(items[item].url in exclusion_list))
+		if(!((items[item].url in exclusion_list) || (items[item].url in prev_recorded))) {
 			products.push(items[item]);
+		}
+		if(products.length===limit)
+			break;
 	}
 	size = products.length;
 	itr = 0;
 
-	for(var j=0; j < products.length;j++)
+	for(var j=0; j<products.length;j++)
    	{
+   		console.log(products[j]);
    		request(
 		{
 			url:cart_url,
 			method:'POST',
 			headers: {
-				'Accept-Encoding' : 'gzip, deflate, br',
 				'Accept-Language' : 'en-US,en;q=0.8',
 				'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36', 
 				'Content-Type' : 'application/x-www-form-urlencoded',
@@ -193,8 +219,9 @@ function getInventoryDataOnProducts()
 				'Connection' : 'keep-alive',
 				'Origin' : 'https://www.lovepopcards.com'
 			},
-			body: 'id=' + products[j].id + '&quantity=9999999999' 
+			body: 'id=' + products[j].id + '&quantity=9999999' 
 		},popUpCardsPostRequest(products[j]));
+   		prev_recorded[products[j].url] = true;
    	}
    	
 }
@@ -210,7 +237,6 @@ function loadDataFromLovePop(error,response,html)
        	var price = $('p.price span');
        	size = urls.length;
        	var price_offset = 0;
-       
 		for(var j=0; j<urls.length;j++)
 		{			
 			var un_prod = new Object();
@@ -222,8 +248,9 @@ function loadDataFromLovePop(error,response,html)
 			items[urls[j].attribs.href.replace('/products/','')] = un_prod;
 		}
 		itr++;
-		if(itr===nums)
+		if(itr===nums) {
 			getInventoryDataOnProducts();
+		}
 	}
 	
 }   		
@@ -232,7 +259,17 @@ function loadDataFromLovePop(error,response,html)
 function startProcess()
 {
 	for(var j=1; j<nums+1;j++)
-		request('https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j, loadDataFromLovePop);
+		request({url:'https://www.lovepopcards.com/collections/shop-greeting-cards-lp?page=' + j,
+		method:'GET',
+		headers: {
+			'Accept-Language' : 'en-US,en;q=0.8',
+			'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36', 
+			'Content-Type' : 'application/x-www-form-urlencoded',
+			'X-Requested-With' : 'HttpRequest',
+			'Connection' : 'keep-alive',
+			'Origin' : 'https://www.lovepopcards.com'
+		}		
+	}, loadDataFromLovePop);
 }
 
 startProcess();
