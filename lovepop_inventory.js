@@ -68,7 +68,7 @@ function writeToFile()
 			}
 			for(var url in prev_products)
 			{
-				//prev_products[url].num_items = 0;
+				prev_products[url].num_items = prev_products[set_of_dates[set_of_dates.length-1]];
 				products.push(prev_products[url]);
 			}
 			products.sort((e1,e2) => {
