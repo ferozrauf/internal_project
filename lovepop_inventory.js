@@ -46,9 +46,9 @@ function writeToFile()
 					prev_product.price = current_line[2];
 					for(var j=0;j<set_of_dates.length;j++)
 						prev_product[set_of_dates[j]] = parseInt(current_line[j+3]);
+					prev_product.num_items = prev_product[set_of_dates[set_of_dates.length-1]];
 					prev_products[prev_product.url] = prev_product;
 				}
-				
 			}
 			for(var k=0;k<products.length;k++)
 			{
@@ -68,7 +68,8 @@ function writeToFile()
 			}
 			for(var url in prev_products)
 			{
-				prev_products[url].num_items = prev_products[set_of_dates[set_of_dates.length-1]];
+				if(!(url in prev_recorded))
+					prev_products[url].num_items = 0;
 				products.push(prev_products[url]);
 			}
 			products.sort((e1,e2) => {
@@ -116,7 +117,7 @@ function writeToFile()
 			console.log('first write');
 		});
 	}
-	
+	g
 }
 
 function popUpCardsPostRequest(product)
@@ -125,6 +126,7 @@ function popUpCardsPostRequest(product)
 		try {
 			//console.log(i);
 			//console.log(body);
+			console.log(body);
 			var overfill_response = JSON.parse(body);
 			/*var delay = 0;
 			if(overfill_response.status==='too_many_requests')
