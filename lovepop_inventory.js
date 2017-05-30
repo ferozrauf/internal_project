@@ -177,7 +177,7 @@ function popUpCardsPostRequest(product)
 var items = new Object();
 var nums = 18;
 var itr = 0;
-var limit = 90;
+var limit = 8;
 function getInventoryDataOnProducts()
 {
 	total_size = 0;
